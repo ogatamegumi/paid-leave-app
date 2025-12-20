@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ../backend:/var/www/backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  node:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ../frontend:/app
+    ports:
+      - "5173:5173"
+    command: npm run dev
+
+  db:
+    image: postgres:15
+    container_name: paid_leave_db
+    environment:
+      POSTGRES_DB: paid_leave
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
