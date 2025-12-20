@@ -1,14 +1,23 @@
 services:
   app:
-    build: .
-    container_name: paid_leave_app
+    build:
+      context: ..
+      dockerfile: docker/php/Dockerfile
     volumes:
-      - .:/var/www
-      - vendor:/var/www/vendor
+      - ../backend:/var/www/backend
     ports:
       - "8000:8000"
     depends_on:
       - db
+
+  node:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ../frontend:/app
+    ports:
+      - "5173:5173"
+    command: npm run dev
 
   db:
     image: postgres:15
@@ -24,4 +33,3 @@ services:
 
 volumes:
   pgdata:
-  vendor:
