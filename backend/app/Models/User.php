@@ -3,7 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\PaidLeaveGrant;
+use App\Models\PaidLeaveRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -13,19 +16,17 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
+        'joined_on',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var list<string>
      */
     protected $hidden = [
@@ -34,15 +35,41 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'joined_on'         => 'date',
         ];
+    }
+
+    public function paidLeaveGrants(): HasMany
+    {
+        return $this->hasMany(paidLeaveGrants::class);
+    }
+
+    public function paidLeaveRequests(): HasMany
+    {
+        return $this->hasMany(paidLeaveRequest::class);
+    }
+
+    public function remainingPaidLeaveDays(): float
+    {
+        // 有効な付与日数の合計
+        $grantedDays = $this->paidLeaveGrants()
+            ->where('status', 'approved')
+            ->whereDate('start_date',  '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->sum('days');
+
+        $usedDays = PaidLeaveUsage::whereHas('grant', function ($q) {
+            $q->where('user_id', $this->id);
+        })
+        ->sum('used_days');
+
+        return max(0, (float) $grantedDays - (float) $usedDays);
     }
 }
