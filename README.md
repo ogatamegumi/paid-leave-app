@@ -1,3 +1,8 @@
+## 開発環境
+- PHP: v8.2
+- Laravel: v12.0
+- PHPUnit: v11.5
+
 ## ER図
 
 ```mermaid
@@ -93,9 +98,17 @@ docker compose -f docker/docker-compose.yml run --rm app php artisan make:migrat
 
 # マイグレーションを実行
 docker compose -f docker/docker-compose.yml run --rm app php artisan migrate
+
+# モデルファイル作成
+cd backend
+php artisan make:model [モデル名]
+
+# テスト(PHPUnit)実行
+vendor/phpunit/phpunit/phpunit tests
+
 ```
 
-- DB（PostgresSQL）関連
+- DB(PostgresSQL)関連
 ```
 # Dockerから接続する
 docker exec -it paid_leave_db psql -U app_user -d paid_leave
@@ -103,3 +116,25 @@ docker exec -it paid_leave_db psql -U app_user -d paid_leave
 # ホストから接続する
 psql -h 127.0.0.1 -p 55432 -U app_user -d paid_leave
 ```
+
+## Eloquentモデル記載順
+目安: 状態→初期化→公開API→内部実装
+
+- public変数
+- protected変数
+  - $table
+  - $fillable
+  - $guarded
+  - $casts(メソッドcasts)
+  - $dates
+  - $hidden
+- private変数
+- コンストラクタ
+- publicでnon-static
+  - リレーション
+  - クエリスコープ
+  - ドメインロジック
+- publicでstatic
+- protectedでnon-staic
+- protectedでstatic
+  
