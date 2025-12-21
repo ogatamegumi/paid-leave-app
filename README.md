@@ -4,46 +4,50 @@
 erDiagram
     users {
         bigint id PK "ユーザーID"
-        string name "ユーザー名"
+        string name "氏名"
         string email "メールアドレス"
-        string role "権限（admin / member）"
+        string role "権限（admin / user）"
         date joined_on "入社日"
-        datetime created_at "作成日時"
-        datetime updated_at "更新日時"
+        datetime created_at
+        datetime updated_at
     }
 
     paid_leave_requests {
         bigint id PK "有給申請ID"
         bigint user_id FK "申請者ユーザーID"
+        date start_date "取得開始日"
+        date end_date "取得終了日"
         decimal requested_days "申請日数"
-        string unit "有給単位（day / half / hour）"
-        date start_date "休暇開始日"
-        date end_date "休暇終了日"
-        string status "申請ステータス（pending / approved / rejected / cancelled）"
-        text reason "申請理由"
-        datetime approved_at "承認日時"
-        bigint approved_by FK "承認者ユーザーID"
+        string status "申請状態（pending / approved / rejected / canceled）"
         datetime created_at "申請日時"
-        datetime updated_at "更新日時"
+        datetime updated_at
     }
 
     paid_leave_grants {
         bigint id PK "有給付与ID"
         bigint user_id FK "付与対象ユーザーID"
-        bigint paid_leave_request_id FK "元となった有給申請ID"
-        date start_date "有給利用開始日"
-        date end_date "有給失効日"
+        date start_date "利用開始日"
+        date end_date "失効日"
         decimal days "付与日数"
-        string unit "有給単位（day / half / hour）"
-        string status "付与ステータス（active / expired / revoked）"
-        datetime created_at "作成日時"
-        datetime updated_at "更新日時"
+        string unit "単位（day / half / hour）"
+        string status "付与状態（active / expired）"
+        datetime created_at
+        datetime updated_at
+    }
+
+    paid_leave_usages {
+        bigint id PK "有給消費ID"
+        bigint paid_leave_grant_id FK "参照する有給付与ID"
+        bigint paid_leave_request_id FK "参照する有給申請ID"
+        decimal used_days "消費日数"
+        datetime created_at "消費確定日時"
     }
 
     users ||--o{ paid_leave_requests : "申請する"
     users ||--o{ paid_leave_grants : "付与される"
-    paid_leave_requests ||--o{ paid_leave_grants : "承認後に生成"
 
+    paid_leave_requests ||--o{ paid_leave_usages : "消費内訳"
+    paid_leave_grants ||--o{ paid_leave_usages : "消費元"
 ```
 
 ## 環境構築
@@ -81,6 +85,12 @@ docker compose -f docker/docker-compose.yml up -d
 ```
 # docker compose down
 docker compose -f docker/docker-compose.yml down
+
+# マイグレーションファイルを作成する
+docker compose -f docker/docker-compose.yml run --rm app php artisan make:migration [ファイル名]
+
+# マイグレーションを実行
+docker compose -f docker/docker-compose.yml run --rm app php artisan migrate
 ```
 
 ### DB（PostgresSQL）
