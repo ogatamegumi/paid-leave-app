@@ -52,7 +52,7 @@ class PaidLeaveService
     DB::transaction(function () use ($request, $approver) {
       [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($request->user_id);
       $remaining = $request->requested_days;
-      
+
       if ($remaining > $totalAvailable) {
         throw new \Exception('有給の残り日数が足りません。申請を修正してもらってください。');
       }
