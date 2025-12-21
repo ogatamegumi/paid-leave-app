@@ -51,7 +51,7 @@ erDiagram
 ```
 
 ## 環境構築
-### 1. Dockerコンテナを起動
+1. Dockerコンテナを起動
 ```
 # （必要に応じて）既存のコンテナ・ボリュームを削除
 docker compose -f docker/docker-compose.yml down -v
@@ -75,13 +75,15 @@ docker compose -f docker/docker-compose.yml run --rm app php artisan migrate
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-### 2. ローカル環境にアクセス
+2. ローカル環境にアクセス
+
 【FE】http://localhost:5173/
 
 【BE】http://localhost:8000/
 
 
 ## その他コマンド
+- 日々の操作系
 ```
 # docker compose down
 docker compose -f docker/docker-compose.yml down
@@ -93,7 +95,7 @@ docker compose -f docker/docker-compose.yml run --rm app php artisan make:migrat
 docker compose -f docker/docker-compose.yml run --rm app php artisan migrate
 ```
 
-### DB（PostgresSQL）
+- DB（PostgresSQL）関連
 ```
 # Dockerから接続する
 docker exec -it paid_leave_db psql -U app_user -d paid_leave
