@@ -12,7 +12,7 @@ class ExpirePaidLeaveGrantsTest extends TestCase
   use RefreshDatabase;
 
   /**
-   * 有給失効日を過ぎたGrantは、コマンドでステータスがexpiredになること
+   * 失効日を迎えた有給は、コマンドが実行されたタイミングでexpiredのステータスになること
    */
   public function test_grant_is_expired_by_command(): void
   {

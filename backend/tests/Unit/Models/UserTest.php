@@ -78,7 +78,7 @@ class UserTest extends TestCase
     }
 
     /**
-     * 未来に付与される有給はカウントされないこと
+     * 未来に付与される有給は、残日数のカウントに含まれないこと
      */
     public function test_future_grant_is_not_counted(): void
     {
@@ -96,7 +96,7 @@ class UserTest extends TestCase
     }
 
     /**
-     * 複数の付与を跨いで有給を使用したとき、複数の付与の合計日数から使用した日数が引かれること
+     * 複数の付与を跨いで有給を使用したとき、複数の付与の合計日数から順不同で使用した日数が引かれること
      */
     public function test_remaining_paid_leave_days_with_multiple_grants(): void
     {
