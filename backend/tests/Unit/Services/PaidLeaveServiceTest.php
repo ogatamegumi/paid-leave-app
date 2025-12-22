@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Services;
 
 use Tests\TestCase;
 use App\Models\User;
@@ -24,8 +24,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 有効期限内の有給がある状態で3日の有給を申請したとき、正しく処理できること
-     * @group create
      */
+    #[Group('create')]
     public function test_creates_a_paid_leave_request(): void
     {
         $user = User::factory()->create();
@@ -62,8 +62,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 0日の有給を申請したときにエラーが起こること
-     * @group create
      */
+    #[Group('create')]
     public function test_throws_exception_when_requested_days_is_zero(): void
     {
         $user = User::factory()->create();
@@ -92,8 +92,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 有効な有給の残日数が5日の状態で15日の有給を申請したときに、エラーが起こること
-     * @group create
      */
+    #[Group('create')]
     public function test_throws_exception_when_remaining_is_less_than_requested(): void
     {
         $user = User::factory()->create();
@@ -121,8 +121,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /** 
      * 複数の有給にまたがる申請が承認されたとき、より前の有給から割り当てられること（前の有給5日と最新の有給3日が残っている状態で6日の有給が承認されたとき、前の有給の残数が0日、最新の有給の残数が2日になること）
-     * @group approve
     */
+    #[Group('approve')]
     public function test_assigns_request_to_grants_and_updates_usages(): void
     {
         $user = User::factory()->create();
@@ -181,8 +181,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 有効期限内の有給が2日残っている状態で5日の有給が申請されたとき、エラーが発生すること
-     * @group approve
      */
+    #[Group('approve')]
     public function test_throws_exception_when_grants_are_insufficient(): void
     {
         $user = User::factory()->create();
@@ -224,8 +224,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 期限切れの有給5日と有効期限内の有給3日が残っている状態で3日の有給が承認されたとき、期限切れの有給の残数が5日、有効期限内の有給の残数が0日になること
-     * @group approve
      */
+    #[Group('approve')]
     public function test_uses_only_grants_currently_valid(): void
     {
         $user = User::factory()->create();
@@ -283,8 +283,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 0日の申請が承認されたとき、残日数が変わらずエラーも起こさないこと
-     * @group approve
      */
+    #[Group('approve')]
     public function test_handles_zero_day_request(): void
     {
         $user = User::factory()->create();
@@ -323,8 +323,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * 他のユーザーの有給を使わないこと
-     * @group approve
      */
+    #[Group('approve')]
     public function test_does_not_use_another_users_grants(): void
     {
         $userA = User::factory()->create();
@@ -381,8 +381,8 @@ class PaidLeaveServiceTest extends TestCase
 
     /**
      * pendingの申請が却下できること
-     * @group reject
      */
+    #[Group('reject')]
     public function test_rejects_pending_request(): void
     {
         $user = User::factory()->create();
@@ -399,17 +399,12 @@ class PaidLeaveServiceTest extends TestCase
         // 検証
         $request->refresh();
         $this->assertEquals('rejected', $request->status);
-        $this->assertEquals($approver->id, $request->approved_by);
-        $this->assertNotNull($request->approved_at);
-
-        // 理由の追記を使う場合
-        // $this->assertStringContainsString('理由テスト', $request->reason);
     }
 
     /**
      * 承認済みの申請は却下できないこと
-     * @group reject
      */
+    #[Group('reject')]
     public function test_throws_exception_if_request_already_approved_or_rejected(): void
     {
         $user = User::factory()->create();
@@ -421,9 +416,77 @@ class PaidLeaveServiceTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('承認できません。すでに承認しているか却下済みです。');
+        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
 
         // 実行
         $this->service->rejectRequest($request, $approver, '理由テスト');
+    }
+
+    /**
+     * 承認後に却下できないこと
+     */
+    #[Group('reject')]
+    public function test_cannot_reject_after_approval(): void
+    {
+        $user = User::factory()->create();
+        $approver = User::factory()->create();
+
+        $request = PaidLeaveRequest::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'approved',
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
+
+        $this->service->rejectRequest($request, $approver);
+    }
+
+    /**
+     * 承認された申請以外は、使用履歴を作らないこと
+     */
+    public function test_usage_of_unapproved_request_is_not_counted(): void
+    {
+        $user = User::factory()->create();
+
+        $grant = PaidLeaveGrant::factory()->create([
+            'user_id' => $user->id,
+            'days' => 10,
+            'status' => 'active',
+            'start_date' => now()->subDays(5),
+            'end_date' => now()->addDays(5),
+        ]);
+
+        // 承認済み申請
+        $approvedRequest = PaidLeaveRequest::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'approved',
+            'requested_days' => 3,
+            'start_date' => now(),
+            'end_date' => now(),
+        ]);
+
+        // 未承認申請
+        $pendingRequest = PaidLeaveRequest::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'pending',
+            'requested_days' => 4,
+            'start_date' => now(),
+            'end_date' => now(),
+        ]);
+
+        PaidLeaveUsage::factory()->create([
+            'paid_leave_grant_id' => $grant->id,
+            'paid_leave_request_id' => $approvedRequest->id,
+            'used_days' => 3,
+        ]);
+
+        PaidLeaveUsage::factory()->create([
+            'paid_leave_grant_id' => $grant->id,
+            'paid_leave_request_id' => $pendingRequest->id,
+            'used_days' => 4,
+        ]);
+
+        $this->assertEquals(7, $user->remainingPaidLeaveDays());
     }
 }

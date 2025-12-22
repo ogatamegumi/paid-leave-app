@@ -90,6 +90,9 @@ docker compose -f docker/docker-compose.yml up -d
 ## その他コマンド
 - 日々の操作系
 ```
+# docker compose up
+docker compose -f docker/docker-compose.yml up -d
+
 # docker compose down
 docker compose -f docker/docker-compose.yml down
 
@@ -104,7 +107,8 @@ cd backend
 php artisan make:model [モデル名]
 
 # テスト(PHPUnit)実行
-vendor/phpunit/phpunit/phpunit tests
+cd backend
+php artisan test test/hoge/HogehogeTest.php
 
 ```
 

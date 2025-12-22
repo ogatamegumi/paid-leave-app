@@ -58,18 +58,11 @@ class User extends Authenticatable
 
     public function remainingPaidLeaveDays(): float
     {
-        // 有効な付与日数の合計
-        $grantedDays = $this->paidLeaveGrants()
-            ->where('status', 'approved')
-            ->whereDate('start_date',  '<=', now())
+        return PaidLeaveGrant::where('user_id', $this->id)
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
-            ->sum('days');
-
-        $usedDays = PaidLeaveUsage::whereHas('grant', function ($q) {
-            $q->where('user_id', $this->id);
-        })
-        ->sum('used_days');
-
-        return max(0, (float) $grantedDays - (float) $usedDays);
+            ->get()
+            ->sum(fn ($grant) => $grant->remainingDays());
     }
 }

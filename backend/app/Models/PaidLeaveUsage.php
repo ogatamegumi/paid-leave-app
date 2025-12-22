@@ -34,13 +34,13 @@ class PaidLeaveUsage extends Model
         ];
     }
 
-    public function requests(): BelongsTo
+    public function request(): BelongsTo
     {
-        return $this->belongsTo(PaidleaveRequest::class);
+        return $this->belongsTo(PaidleaveRequest::class, 'paid_leave_request_id');
     }
 
-    public function grants(): BelongsTo
+    public function grant(): BelongsTo
     {
-        return $this->belongsTo(PaidleaveGrant::class);
+        return $this->belongsTo(PaidleaveGrant::class, 'paid_leave_grant_id');
     }
 }
