@@ -86,7 +86,7 @@ class PaidLeaveService
   public function rejectRequest(PaidLeaveRequest $request, User $approver, ?string $reason = null): void
   {
     if ($request->status !== 'pending') {
-      throw new \Exception('却下できません。すでに処理済みです。');
+      throw new \Exception('却下できません。すでに承認または却下しています。');
     }
 
     DB::transaction(function () use ($request, $approver, $reason) {

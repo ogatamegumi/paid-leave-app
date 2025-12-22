@@ -421,7 +421,7 @@ class PaidLeaveServiceTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('却下できません。すでに処理済みです。');
+        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
 
         // 実行
         $this->service->rejectRequest($request, $approver, '理由テスト');
@@ -442,7 +442,7 @@ class PaidLeaveServiceTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('却下できません。すでに処理済みです。');
+        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
 
         $this->service->rejectRequest($request, $approver);
     }
