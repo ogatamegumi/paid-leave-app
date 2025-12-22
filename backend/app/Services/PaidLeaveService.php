@@ -45,6 +45,14 @@ class PaidLeaveService
 
   public function approveRequest(PaidLeaveRequest $request, User $approver): void
   {
+    if ($request->requested_days === 0) {
+      $request->status = 'approved';
+      $request->approved_at = now();
+      $request->approved_by = $approver->id;
+      $request->save();
+      return;
+    }
+
     if ($request->status !== 'pending') {
       throw new \Exception('承認できません。すでに承認しているか却下済みです。');
     }
@@ -107,6 +115,7 @@ class PaidLeaveService
     $grants = PaidLeaveGrant::where('user_id', $userId)
       ->where('status', 'approved')
       ->whereDate('start_date', '<=', now())
+      ->whereDate('end_date', '>=', now())
       ->orderBy('start_date')
       ->get();
 
