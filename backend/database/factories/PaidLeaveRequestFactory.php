@@ -15,9 +15,10 @@ class PaidLeaveRequestFactory extends Factory
       'user_id' => null,
       'requested_days' => fake()->numberBetween(1, 5),
       'unit' => 'day',
-      'status' => 'pending',
       'start_date' => now(),
       'end_date' => now()->addDays(5),
+      'status' => 'pending',
+      'reason' => null,
     ];
   }
 }
