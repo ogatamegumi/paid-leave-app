@@ -50,19 +50,25 @@ class PaidLeaveService
     }
 
     DB::transaction(function () use ($request, $approver) {
-      [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($request->user_id);
+
       $remaining = $request->requested_days;
+
+      [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($request->user_id);
 
       if ($remaining > $totalAvailable) {
         throw new \Exception('有給の残り日数が足りません。申請を修正してもらってください。');
       }
+
+      $request->status = 'approved';
+      $request->approved_at = now();
+      $request->approved_by = $approver->id;
+      $request->save();
 
       foreach ($grants as $grant) {
         $grantRemaining = $grant->remainingDays();
         if ($grantRemaining <= 0) continue;
 
         $use = min($grantRemaining, $remaining);
-
         if ($use > 0) {
           PaidLeaveUsage::create([
             'paid_leave_grant_id' => $grant->id,
@@ -74,18 +80,13 @@ class PaidLeaveService
         $remaining -= $use;
         if ($remaining <= 0) break;
       }
-
-      $request->status = 'approved';
-      $request->approved_at = now();
-      $request->approved_by = $approver->id;
-      $request->save();
     });
   }
 
   public function rejectRequest(PaidLeaveRequest $request, User $approver, ?string $reason = null): void
   {
     if ($request->status !== 'pending') {
-      throw new \Exception('承認できません。すでに承認しているか却下済みです。');
+      throw new \Exception('却下できません。すでに処理済みです。');
     }
 
     DB::transaction(function () use ($request, $approver, $reason) {
@@ -102,7 +103,6 @@ class PaidLeaveService
     $grants = PaidLeaveGrant::where('user_id', $userId)
       ->where('status', 'approved')
       ->whereDate('start_date', '<=', now())
-      ->whereDate('end_date', '>=', now())
       ->orderBy('start_date')
       ->get();
 

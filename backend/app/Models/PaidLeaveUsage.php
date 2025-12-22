@@ -34,6 +34,15 @@ class PaidLeaveUsage extends Model
         ];
     }
 
+    protected static function booted()
+    {
+        static::creating(function ($usage) {
+            if ($usage->request->status !== 'approved') {
+                throw new \LogicException('承認されていない有給は消費できません。');
+            }
+        });
+    }
+
     public function request(): BelongsTo
     {
         return $this->belongsTo(PaidleaveRequest::class, 'paid_leave_request_id');
