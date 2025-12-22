@@ -52,7 +52,11 @@ class PaidLeaveGrant extends Model
         if ($this->end_date->isPast()) {
             return 0;
         }
-        
+
+        if ($this->status !== 'active') {
+            return 0;
+        }
+
         $usedDays = $this->usages()
             ->whereHas('request', function ($q) {
                 $q->where('status', 'approved');
