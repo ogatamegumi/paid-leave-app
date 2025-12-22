@@ -49,7 +49,16 @@ class PaidLeaveGrant extends Model
 
     public function remainingDays(): float
     {
-        $used = $this->usages()->sum('used_days');
-        return max(0, (float) $this->days - (float) $used);
+        if ($this->end_date->isPast()) {
+            return 0;
+        }
+        
+        $usedDays = $this->usages()
+            ->whereHas('request', function ($q) {
+                $q->where('status', 'approved');
+            })
+            ->sum('used_days');
+
+        return max(0, (float) $this->days - (float) $usedDays);
     }
 }
