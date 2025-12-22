@@ -161,6 +161,6 @@ class UserTest extends TestCase
             'end_date' => now()->subDay(),
         ]);
 
-        $this->assertEquals(0, $grant->remainingDays());
+        $this->assertEquals(0, $user->remainingPaidLeaveDays());
     }
 }
