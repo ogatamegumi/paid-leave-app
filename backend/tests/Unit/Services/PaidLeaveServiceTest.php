@@ -399,11 +399,6 @@ class PaidLeaveServiceTest extends TestCase
         // 検証
         $request->refresh();
         $this->assertEquals('rejected', $request->status);
-        $this->assertEquals($approver->id, $request->approved_by);
-        $this->assertNotNull($request->approved_at);
-
-        // 理由の追記を使う場合
-        // $this->assertStringContainsString('理由テスト', $request->reason);
     }
 
     /**

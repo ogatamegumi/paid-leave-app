@@ -83,7 +83,11 @@ class PaidLeaveService
     });
   }
 
-  public function rejectRequest(PaidLeaveRequest $request, User $approver, ?string $reason = null): void
+  public function rejectRequest(
+    PaidLeaveRequest $request, 
+    User $approver, 
+    ?string $reason = null
+  ): void
   {
     if ($request->status !== 'pending') {
       throw new \Exception('却下できません。すでに承認または却下しています。');
@@ -93,7 +97,7 @@ class PaidLeaveService
       $request->status = 'rejected';
       $request->approved_at = now();
       $request->approved_by = $approver->id;
-      // if ($reason) $request->reason .= "\n[却下理由] " . $reason;
+      $request->reason = $reason;
       $request->save();
     });
   }
