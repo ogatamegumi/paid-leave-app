@@ -418,7 +418,7 @@ class PaidLeaveServiceTest extends TestCase
         ]);
 
         $this->expectException(InvalidRequestStatusException::class);
-        $this->expectExceptionMessageMatches('/この申請は処理できません。すでに.+されています。/');
+        $this->expectExceptionMessage('承認済み');
 
         // 実行
         $this->service->rejectRequest($request, $approver, '理由テスト');
@@ -439,7 +439,7 @@ class PaidLeaveServiceTest extends TestCase
         ]);
 
         $this->expectException(InvalidRequestStatusException::class);
-        $this->expectExceptionMessageMatches('/この申請は処理できません。すでに.+されています。/');
+        $this->expectExceptionMessage('承認済み');
 
         $this->service->rejectRequest($request, $approver);
     }
