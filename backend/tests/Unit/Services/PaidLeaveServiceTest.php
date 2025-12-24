@@ -10,6 +10,7 @@ use App\Models\PaidLeaveUsage;
 use App\Services\PaidLeaveService;
 use App\Exceptions\PaidLeave\InsufficientPaidLeaveException;
 use App\Exceptions\PaidLeave\InvalidRequestStatusException;
+use App\Exceptions\PaidLeave\ZeroRequestedDaysException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PaidLeaveServiceTest extends TestCase
@@ -79,7 +80,7 @@ class PaidLeaveServiceTest extends TestCase
             'end_date' => now()->addDays(10),
         ]);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ZeroRequestedDaysException::class);
         $this->expectExceptionMessage('申請された日数が0日です。1日以上の有給を申請してください。');
 
         // 実行

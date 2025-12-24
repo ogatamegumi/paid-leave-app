@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Exceptions\PaidLeave\InsufficientPaidLeaveException;
 use App\Exceptions\PaidLeave\InvalidRequestStatusException;
+use App\Exceptions\PaidLeave\ZeroRequestedDaysException;
 
 class PaidLeaveService
 {
@@ -24,7 +25,7 @@ class PaidLeaveService
   {
     return DB::transaction(function () use ($user, $requestedDays, $unit, $startDate, $endDate, $reason) {
       if ($requestedDays <= 0) {
-        throw new \InvalidArgumentException('申請された日数が0日です。1日以上の有給を申請してください。');
+        throw new ZeroRequestedDaysException;
       }
 
       [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($user->id);
