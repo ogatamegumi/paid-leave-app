@@ -8,6 +8,8 @@ use App\Models\PaidLeaveRequest;
 use App\Models\PaidLeaveUsage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Exceptions\PaidLeave\InsufficientPaidLeaveException;
+use App\Exceptions\PaidLeave\InvalidRequestStatusException;
 
 class PaidLeaveService
 {
@@ -28,7 +30,7 @@ class PaidLeaveService
       [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($user->id);
 
       if ($requestedDays > $totalAvailable) {
-        throw new \Exception('残りの有給は' . $totalAvailable . '日だけです。日数を調整してください。');
+        throw new InsufficientPaidLeaveException($totalAvailable);
       }
 
       return PaidLeaveRequest::create([
@@ -54,7 +56,7 @@ class PaidLeaveService
     }
 
     if ($request->status !== 'pending') {
-      throw new \Exception('承認できません。すでに承認しているか却下済みです。');
+      throw new InvalidRequestStatusException($request->status);
     }
 
     DB::transaction(function () use ($request, $approver) {
@@ -64,7 +66,7 @@ class PaidLeaveService
       [$grants, $totalAvailable] = $this->getAvailableGrantsAndTotal($request->user_id);
 
       if ($remaining > $totalAvailable) {
-        throw new \Exception('有給の残り日数が足りません。申請を修正してもらってください。');
+        throw new InsufficientPaidLeaveException($totalAvailable);
       }
 
       $request->status = 'approved';
@@ -98,7 +100,7 @@ class PaidLeaveService
   ): void
   {
     if ($request->status !== 'pending') {
-      throw new \Exception('却下できません。すでに承認または却下しています。');
+      throw new InvalidRequestStatusException($request->status);
     }
 
     DB::transaction(function () use ($request, $approver, $reason) {

@@ -8,6 +8,8 @@ use App\Models\PaidLeaveGrant;
 use App\Models\PaidLeaveRequest;
 use App\Models\PaidLeaveUsage;
 use App\Services\PaidLeaveService;
+use App\Exceptions\PaidLeave\InsufficientPaidLeaveException;
+use App\Exceptions\PaidLeave\InvalidRequestStatusException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PaidLeaveServiceTest extends TestCase
@@ -107,8 +109,8 @@ class PaidLeaveServiceTest extends TestCase
             'end_date' => now()->addDays(10),
         ]);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessageMatches('/残りの有給は\d+日だけです。日数を調整してください/');
+        $this->expectException(InsufficientPaidLeaveException::class);
+        $this->expectExceptionMessageMatches('/有給は残り\d+日しかありません。日数を調整してください。/');
 
         $this->service->createRequest(
             $user,
@@ -206,8 +208,8 @@ class PaidLeaveServiceTest extends TestCase
             'end_date' => now()->addDays(5),
         ]);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('有給の残り日数が足りません。申請を修正してもらってください');
+        $this->expectException(InsufficientPaidLeaveException::class);
+        $this->expectExceptionMessageMatches('/有給は残り\d+日しかありません。日数を調整してください。/');
 
         try {
             // 実行
@@ -415,8 +417,8 @@ class PaidLeaveServiceTest extends TestCase
             'status' => 'approved',
         ]);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
+        $this->expectException(InvalidRequestStatusException::class);
+        $this->expectExceptionMessageMatches('/この申請は処理できません。すでに.+されています。/');
 
         // 実行
         $this->service->rejectRequest($request, $approver, '理由テスト');
@@ -436,8 +438,8 @@ class PaidLeaveServiceTest extends TestCase
             'status' => 'approved',
         ]);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('却下できません。すでに承認または却下しています。');
+        $this->expectException(InvalidRequestStatusException::class);
+        $this->expectExceptionMessageMatches('/この申請は処理できません。すでに.+されています。/');
 
         $this->service->rejectRequest($request, $approver);
     }
