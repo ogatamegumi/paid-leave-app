@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\PaidLeave;
 
 use App\Models\User;
 use App\Models\PaidLeaveGrant;

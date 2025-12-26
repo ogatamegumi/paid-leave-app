@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\PaidLeaveGrant;
 use App\Models\PaidLeaveRequest;
 use App\Models\PaidLeaveUsage;
-use App\Services\PaidLeaveService;
+use App\Services\PaidLeave\PaidLeaveService;
 use App\Exceptions\PaidLeave\InsufficientPaidLeaveException;
 use App\Exceptions\PaidLeave\InvalidRequestStatusException;
 use App\Exceptions\PaidLeave\ZeroRequestedDaysException;

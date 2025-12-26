@@ -13,11 +13,12 @@ class PaidLeaveGrantFactory extends Factory
   {
     return [
       'user_id' => null,
+      'start_date' => now()->subDays(10),
+      'end_date' => now()->addDays(10),
       'days' => fake()->numberBetween(1, 10),
       'unit' => 'day',
       'status' => 'approved',
-      'start_date' => now()->subDays(10),
-      'end_date' => now()->addDays(10),
+      'grant_year' => 5,
     ];
   }
 }
