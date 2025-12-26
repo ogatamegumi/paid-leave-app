@@ -19,7 +19,7 @@ return new class extends Migration
                   ->default('member')
                   ->comment('権限（admin / member）');
 
-            // 入社日（未設定の可能性あり）
+            // 入社日
             $table->date('joined_on')
                   ->nullable()
                   ->comment('入社日');

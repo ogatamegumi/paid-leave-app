@@ -18,11 +18,12 @@ class PaidLeaveGrant extends Model
      */
     protected $fillable = [
         'user_id',
-        'started_date',
+        'start_date',
         'end_date',
         'days',
         'unit',
         'status',
+        'grant_year',
     ];
 
     /**
